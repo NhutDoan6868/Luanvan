@@ -4,37 +4,33 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "User ID is required"],
+      required: true,
     },
-    items: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "OrderItem",
-        required: true,
-      },
-    ],
+
+    addressId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
+      required: true,
+    },
     total_Price: {
       type: Number,
-      required: [true, "Total price is required"],
-      min: [0, "Total price cannot be negative"],
+      required: true,
+      min: 0,
+    },
+    total_Discount: {
+      type: Number,
       default: 0,
+      min: 0,
     },
     orderstatus: {
       type: String,
-      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
-      default: "pending",
-    },
-    shippingAddress: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
-      required: [true, "Shipping address is required"],
-    },
-    paymentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Payment",
+      enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
+      default: "Pending",
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const Order = mongoose.model("Order", orderSchema);

@@ -1,10 +1,16 @@
 const mongoose = require("mongoose");
-const addressSchema = new mongoose.Schema({
-  street: String,
-  city: String,
-  address: String,
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+const addressSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    street: String,
+    city: String,
+    address: String,
+  },
+  { timestamps: true }
+);
 const Address = mongoose.model("Address", addressSchema);
 module.exports = Address;

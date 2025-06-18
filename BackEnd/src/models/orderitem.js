@@ -1,29 +1,30 @@
 const mongoose = require("mongoose");
 const orderitemSchema = new mongoose.Schema(
   {
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-    },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
-      required: true,
+      required: [true, "Order ID is required"],
+    },
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: [true, "Product ID is required"],
     },
     quantity: {
       type: Number,
-      required: true,
-      min: 1,
+      required: [true, "Quantity is required"],
+      min: [1, "Quantity must be at least 1"],
+      default: 1,
     },
     price: {
       type: Number,
-      required: true,
+      required: [true, "Price is required"],
+      min: [0, "Price cannot be negative"],
+      default: 0,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 const OrderItem = mongoose.model("OrderItem", orderitemSchema);

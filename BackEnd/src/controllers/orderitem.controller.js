@@ -5,7 +5,7 @@ const {
   getOrderItemsByOrderService,
   updateOrderItemService,
   deleteOrderItemService,
-} = require("../services/orderitem.service");
+} = require("../services/orderItem.service");
 
 const authenticateAdmin = (req, res, next) => {
   const token = req.headers["authorization"]?.split(" ")[1];

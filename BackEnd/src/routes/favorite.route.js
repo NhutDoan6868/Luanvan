@@ -10,7 +10,7 @@ const {
   authenticateAdmin,
 } = require("../controllers/favorite.controller");
 
-routerAPi.post("/", authenticateToken, addFavorite);
+routerAPi.post("/create", authenticateToken, addFavorite);
 routerAPi.get("/", authenticateAdmin, getAllFavorites);
 routerAPi.get("/:id", authenticateToken, getFavoriteById);
 routerAPi.get("/user/me", authenticateToken, getFavoritesByUser);

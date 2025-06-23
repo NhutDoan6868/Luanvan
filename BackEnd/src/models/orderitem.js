@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const orderitemSchema = new mongoose.Schema(
+const orderItemSchema = new mongoose.Schema(
   {
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,5 +27,5 @@ const orderitemSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const OrderItem = mongoose.model("OrderItem", orderitemSchema);
+const OrderItem = mongoose.model("OrderItem", orderItemSchema);
 module.exports = OrderItem;

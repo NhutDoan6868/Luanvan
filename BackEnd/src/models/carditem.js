@@ -25,3 +25,6 @@ const cardItemSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+const CardItem = mongoose.model("CardItem", cardItemSchema);
+module.exports = CardItem;

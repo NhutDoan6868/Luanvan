@@ -11,7 +11,7 @@ const {
   authenticateAdmin,
 } = require("../controllers/payment.controller");
 
-routerAPi.post("/", authenticateAdmin, createPayment);
+routerAPi.post("/create", authenticateAdmin, createPayment);
 routerAPi.get("/", authenticateAdmin, getAllPayments);
 routerAPi.get("/:id", authenticateToken, getPaymentById);
 routerAPi.get("/user/me", authenticateToken, getPaymentsByUser);

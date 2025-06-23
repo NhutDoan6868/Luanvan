@@ -11,7 +11,7 @@ const {
   authenticateAdmin,
 } = require("../controllers/address.controller");
 
-routerAPi.post("/", authenticateToken, createAddress);
+routerAPi.post("/create", authenticateToken, createAddress);
 routerAPi.get("/", authenticateAdmin, getAllAddresses);
 routerAPi.get("/:id", authenticateToken, getAddressById);
 routerAPi.get("/user/me", authenticateToken, getAddressesByUser);

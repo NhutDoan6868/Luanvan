@@ -9,7 +9,7 @@ const {
   authenticateToken,
 } = require("../controllers/review.controller");
 
-routerAPi.post("/", authenticateToken, createReview);
+routerAPi.post("/create", authenticateToken, createReview);
 routerAPi.get("/", getAllReviews);
 routerAPi.get("/:id", getReviewById);
 routerAPi.put("/:id", authenticateToken, updateReview);

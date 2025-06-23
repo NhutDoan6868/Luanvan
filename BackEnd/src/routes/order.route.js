@@ -11,7 +11,7 @@ const {
   authenticateAdmin,
 } = require("../controllers/order.controller");
 
-routerAPi.post("/", authenticateToken, createOrder);
+routerAPi.post("/create", authenticateToken, createOrder);
 routerAPi.get("/", authenticateAdmin, getAllOrders);
 routerAPi.get("/:id", authenticateToken, getOrderById);
 routerAPi.get("/user/me", authenticateToken, getOrdersByUser);

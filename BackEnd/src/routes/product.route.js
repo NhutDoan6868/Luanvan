@@ -8,7 +8,7 @@ const {
   deleteProduct,
 } = require("../controllers/product.controller");
 
-routerAPi.post("/", createProduct);
+routerAPi.post("/create", createProduct);
 routerAPi.get("/", getAllProducts);
 routerAPi.get("/:id", getProductById);
 routerAPi.put("/:id", updateProduct);

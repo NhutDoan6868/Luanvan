@@ -8,9 +8,9 @@ const {
   updateOrderItem,
   deleteOrderItem,
   authenticateAdmin,
-} = require("../controllers/orderitem.controller");
+} = require("../controllers/orderItem.controller");
 
-routerAPi.post("/", authenticateAdmin, createOrderItem);
+routerAPi.post("/create", authenticateAdmin, createOrderItem);
 routerAPi.get("/", authenticateAdmin, getAllOrderItems);
 routerAPi.get("/:id", authenticateAdmin, getOrderItemById);
 routerAPi.get("/order/:orderId", authenticateAdmin, getOrderItemsByOrder);

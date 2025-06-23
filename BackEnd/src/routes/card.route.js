@@ -13,7 +13,7 @@ const {
   authenticateAdmin,
 } = require("../controllers/card.controller");
 
-routerAPi.post("/", authenticateToken, createCard);
+routerAPi.post("/create", authenticateToken, createCard);
 routerAPi.post("/items", authenticateToken, addItemToCard);
 routerAPi.get("/", authenticateAdmin, getAllCards);
 routerAPi.get("/:id", authenticateToken, getCardById);

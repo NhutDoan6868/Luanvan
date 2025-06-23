@@ -10,7 +10,7 @@ const {
   authenticateAdmin,
 } = require("../controllers/image.controller");
 
-routerAPi.post("/", authenticateAdmin, createImage);
+routerAPi.post("/create", authenticateAdmin, createImage);
 routerAPi.get("/", getAllImages);
 routerAPi.get("/:id", getImageById);
 routerAPi.get("/product/:productId", getImagesByProduct);

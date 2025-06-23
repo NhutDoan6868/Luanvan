@@ -6,10 +6,11 @@ const {
   getPromotionById,
   updatePromotion,
   deletePromotion,
-  authenticateAdmin,
 } = require("../controllers/promotion.controller");
 
-routerAPi.post("/", authenticateAdmin, createPromotion);
+const { authenticateAdmin } = require("../../middleware/authenticateAdmin");
+
+routerAPi.post("/create", authenticateAdmin, createPromotion);
 routerAPi.get("/", getAllPromotions);
 routerAPi.get("/:id", getPromotionById);
 routerAPi.put("/:id", authenticateAdmin, updatePromotion);

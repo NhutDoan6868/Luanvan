@@ -9,9 +9,9 @@ const {
   authenticateAdmin,
 } = require("../controllers/category.controller");
 
-routerAPi.post("/", authenticateAdmin, createCategory);
+routerAPi.post("/create", authenticateAdmin, createCategory);
 routerAPi.get("/", getAllCategories);
-routerAPi.get("/:id", getAllCategories);
+routerAPi.get("/:id", getCategoryById);
 routerAPi.put("/:id", authenticateAdmin, updateCategory);
 routerAPi.delete("/:id", authenticateAdmin, deleteCategory);
 

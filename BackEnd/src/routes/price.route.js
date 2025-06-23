@@ -9,7 +9,7 @@ const {
   authenticateAdmin,
 } = require("../controllers/price.controller");
 
-routerAPi.post("/", authenticateAdmin, createPrice);
+routerAPi.post("/create", authenticateAdmin, createPrice);
 routerAPi.get("/", getAllPrices);
 routerAPi.get("/:id", getPriceById);
 routerAPi.put("/:id", authenticateAdmin, updatePrice);

@@ -1,12 +1,12 @@
 const Price = require("../models/price");
-const Product = require("../models/product");
+const Size = require("../models/size");
 
 const createPriceService = async (priceData) => {
   try {
-    const { price, productId } = priceData;
+    const { price, sizeId } = priceData;
 
     // Kiểm tra các trường bắt buộc
-    if (price === undefined || !productId) {
+    if (price === undefined || !sizeId) {
       return {
         message: "Vui lòng cung cấp đầy đủ giá và ID sản phẩm",
         data: null,
@@ -21,9 +21,9 @@ const createPriceService = async (priceData) => {
       };
     }
 
-    // Kiểm tra productId tồn tại
-    const product = await Product.findById(productId);
-    if (!product) {
+    // Kiểm tra sizeId tồn tại
+    const size = await Size.findById(sizeId);
+    if (!size) {
       return {
         message: "Sản phẩm không tồn tại",
         data: null,
@@ -31,7 +31,7 @@ const createPriceService = async (priceData) => {
     }
 
     // Kiểm tra xem sản phẩm đã có giá chưa
-    const existingPrice = await Price.findOne({ productId });
+    const existingPrice = await Price.findOne({ sizeId });
     if (existingPrice) {
       return {
         message: "Sản phẩm đã có giá, vui lòng cập nhật thay vì tạo mới",
@@ -41,12 +41,12 @@ const createPriceService = async (priceData) => {
 
     const newPrice = await Price.create({
       price,
-      productId,
+      sizeId,
     });
 
     return {
       message: "Tạo giá sản phẩm thành công",
-      data: await Price.findById(newPrice._id).populate("productId", "name"),
+      data: await Price.findById(newPrice._id).populate("sizeId", "name"),
     };
   } catch (error) {
     throw new Error("Lỗi khi tạo giá sản phẩm: " + error.message);
@@ -55,7 +55,7 @@ const createPriceService = async (priceData) => {
 
 const getAllPricesService = async () => {
   try {
-    const prices = await Price.find().populate("productId", "name");
+    const prices = await Price.find().populate("sizeId", "name");
     return {
       message: "Lấy danh sách giá sản phẩm thành công",
       data: prices,
@@ -67,7 +67,7 @@ const getAllPricesService = async () => {
 
 const getPriceByIdService = async (id) => {
   try {
-    const price = await Price.findById(id).populate("productId", "name");
+    const price = await Price.findById(id).populate("sizeId", "name");
     if (!price) {
       return {
         message: "Không tìm thấy giá sản phẩm",
@@ -83,12 +83,31 @@ const getPriceByIdService = async (id) => {
   }
 };
 
+const getPriceBySizeIdService = async (sizeId) => {
+  try {
+    const size = await Price.findOne({ sizeId });
+    if (!size) {
+      return {
+        message: "Không tìm thấy giá sản phẩm",
+        data: null,
+      };
+    }
+    return {
+      message: "Lấy thông tin giá sản phẩm thành công",
+      data: size,
+    };
+  } catch (error) {
+    throw new Error("Lỗi khi lấy giá bằng kích thước" + error.message);
+  }
+};
+
 const updatePriceService = async (id, updateData) => {
   try {
     if (!Object.keys(updateData).length) {
       return {
         message: "Vui lòng cung cấp dữ liệu để cập nhật",
         data: null,
+       
       };
     }
 
@@ -99,16 +118,16 @@ const updatePriceService = async (id, updateData) => {
       };
     }
 
-    if (updateData.productId) {
-      const product = await Product.findById(updateData.productId);
-      if (!product) {
+    if (updateData.sizeId) {
+      const size = await Size.findById(updateData.sizeId);
+      if (!size) {
         return {
           message: "Sản phẩm không tồn tại",
           data: null,
         };
       }
       const existingPrice = await Price.findOne({
-        productId: updateData.productId,
+        sizeId: updateData.sizeId,
       });
       if (existingPrice && existingPrice._id.toString() !== id) {
         return {
@@ -121,7 +140,7 @@ const updatePriceService = async (id, updateData) => {
     const price = await Price.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
-    }).populate("productId", "name");
+    }).populate("sizeId", "name");
 
     if (!price) {
       return {
@@ -141,7 +160,7 @@ const updatePriceService = async (id, updateData) => {
 
 const deletePriceService = async (id) => {
   try {
-    const price = await Price.findById(id).populate("productId", "name");
+    const price = await Price.findById(id).populate("sizeId", "name");
     if (!price) {
       return {
         message: "Không tìm thấy giá sản phẩm",
@@ -150,10 +169,10 @@ const deletePriceService = async (id) => {
     }
 
     // Kiểm tra liên kết với đơn hàng hoặc giỏ hàng
-    const { OrderItem, CardItem } = require("../models");
+    const { OrderItem, CartItem } = require("../models");
     const relatedItems = await Promise.all([
-      OrderItem.findOne({ productId: price.productId }),
-      CardItem.findOne({ productId: price.productId }),
+      OrderItem.findOne({ sizeId: price.sizeId }),
+      CartItem.findOne({ sizeId: price.sizeId }),
     ]);
     if (relatedItems.some((item) => item)) {
       return {
@@ -177,6 +196,7 @@ module.exports = {
   createPriceService,
   getAllPricesService,
   getPriceByIdService,
+  getPriceBySizeIdService,
   updatePriceService,
   deletePriceService,
 };

@@ -42,9 +42,9 @@ const authenticateAdmin = (req, res, next) => {
 };
 
 const createOrder = async (req, res) => {
-  const { shippingAddress, paymentMethod } = req.body;
+  const { shippingAddress, paymentMethod, items } = req.body;
   const userId = req.user.id; // Lấy từ JWT
-  if (!shippingAddress || !paymentMethod) {
+  if (!shippingAddress || !paymentMethod || !items) {
     return res.status(400).json({
       message: "Vui lòng cung cấp địa chỉ giao hàng và phương thức thanh toán",
     });
@@ -52,7 +52,7 @@ const createOrder = async (req, res) => {
 
   try {
     const data = await createOrderService(
-      { shippingAddress, paymentMethod },
+      { shippingAddress, paymentMethod, items },
       userId
     );
     if (!data.data) {

@@ -66,6 +66,8 @@ const createPromotionService = async (promotionData) => {
 const getAllPromotionsService = async () => {
   try {
     const promotions = await Promotion.find();
+    console.log("CCCCCCCC", promotions);
+
     return {
       message: "Lấy danh sách khuyến mãi thành công",
       data: promotions,

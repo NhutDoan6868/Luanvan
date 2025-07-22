@@ -11,6 +11,12 @@ const productSchema = new mongoose.Schema(
       ref: "Subcategory",
       required: true,
     },
+    statistics: {
+      rating: {
+        type: Number,
+        default: 0,
+      },
+    },
   },
   { timestamps: true }
 );

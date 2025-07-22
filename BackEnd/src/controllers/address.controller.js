@@ -42,9 +42,9 @@ const authenticateAdmin = (req, res, next) => {
 };
 
 const createAddress = async (req, res) => {
-  const { street, city, state, zipCode, country } = req.body;
+  const { street, city, addressdetails, country } = req.body;
   const userId = req.user.id; // Lấy từ JWT
-  if (!street || !city || !state || !zipCode || !country) {
+  if (!country) {
     return res.status(400).json({
       message:
         "Vui lòng cung cấp đầy đủ thông tin: đường, thành phố, tỉnh, mã bưu điện, quốc gia",
@@ -53,7 +53,7 @@ const createAddress = async (req, res) => {
 
   try {
     const data = await createAddressService(
-      { street, city, state, zipCode, country },
+      { street, city, addressdetails, country },
       userId
     );
     if (!data.data) {

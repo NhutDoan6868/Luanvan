@@ -32,7 +32,12 @@ const createPaymentService = async (paymentData) => {
     }
 
     // Kiểm tra paymentMethod hợp lệ
-    const validMethods = ["credit_card", "paypal", "bank_transfer"];
+    const validMethods = [
+      "credit_cart",
+      "paypal",
+      "bank_transfer",
+      "cash_on_delivery",
+    ];
     if (!validMethods.includes(paymentMethod)) {
       return {
         message: "Phương thức thanh toán không hợp lệ",
@@ -177,7 +182,7 @@ const updatePaymentService = async (id, updateData) => {
 
     // Kiểm tra paymentMethod hợp lệ
     if (updateData.paymentMethod) {
-      const validMethods = ["credit_card", "paypal", "bank_transfer"];
+      const validMethods = ["credit_cart", "paypal", "bank_transfer"];
       if (!validMethods.includes(updateData.paymentMethod)) {
         return {
           message: "Phương thức thanh toán không hợp lệ",

@@ -5,9 +5,9 @@ const priceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    productId: {
+    sizeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: "Size",
       required: true,
     },
   },

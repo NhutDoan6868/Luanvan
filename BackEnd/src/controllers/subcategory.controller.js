@@ -40,6 +40,8 @@ const getAllSubcategories = async (req, res) => {
   }
 };
 
+module.exports = { getAllSubcategories };
+
 const getSubcategoryById = async (req, res) => {
   const { id } = req.params;
   try {

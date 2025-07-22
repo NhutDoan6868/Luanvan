@@ -1,24 +1,26 @@
-const CardItem = require("../models/cardItem.model");
-const createCardItem = async (cardItemData) => {
+const Cart = require("../models/cart");
+const CartItem = require("../models/cartItem");
+
+const createCartItem = async (cartItemData) => {
   try {
-    const newCardItem = new CardItem(cardItemData);
-    return await newCardItem.save();
+    const newCartItem = new CartItem(cartItemData);
+    return await newCartItem.save();
   } catch (error) {
     throw new Error(`Lỗi khi tạo mục giỏ hàng: ${error.message}`);
   }
 };
 
-const getAllCardItems = async () => {
+const getAllCartItems = async () => {
   try {
-    return await CardItem.find().populate("productId cardId");
+    return await CartItem.find().populate("productId cartId");
   } catch (error) {
     throw new Error(`Lỗi khi lấy danh sách mục giỏ hàng: ${error.message}`);
   }
 };
 
-const getCardItemById = async (id) => {
+const getCartItemById = async (id) => {
   try {
-    const item = await CardItem.findById(id).populate("productId cardId");
+    const item = await CartItem.findById(id).populate("productId cartId");
     if (!item) {
       throw new Error("Không tìm thấy mục giỏ hàng");
     }
@@ -28,9 +30,9 @@ const getCardItemById = async (id) => {
   }
 };
 
-const updateCardItem = async (id, updateData) => {
+const updateCartItem = async (id, updateData) => {
   try {
-    const item = await CardItem.findByIdAndUpdate(id, updateData, {
+    const item = await CartItem.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
@@ -43,9 +45,9 @@ const updateCardItem = async (id, updateData) => {
   }
 };
 
-const deleteCardItem = async (id) => {
+const deleteCartItem = async (id) => {
   try {
-    const item = await CardItem.findByIdAndDelete(id);
+    const item = await CartItem.findByIdAndDelete(id);
     if (!item) {
       throw new Error("Không tìm thấy mục giỏ hàng");
     }
@@ -56,9 +58,9 @@ const deleteCardItem = async (id) => {
 };
 
 module.exports = {
-  createCardItem,
-  getAllCardItems,
-  getCardItemById,
-  updateCardItem,
-  deleteCardItem,
+  createCartItem,
+  getAllCartItems,
+  getCartItemById,
+  updateCartItem,
+  deleteCartItem,
 };

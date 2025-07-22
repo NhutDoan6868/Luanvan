@@ -5,14 +5,15 @@ const {
   getUserByIdService,
   updateUserService,
   deleteUserService,
+  createAdminService,
 } = require("../services/user.service");
+const jwt = require("jsonwebtoken");
 
 const createUser = async (req, res) => {
-  const { fullName, email, password, phone, role } = req.body;
-  if (!fullName || !email || !password || !phone) {
+  const { fullName, email, password, role, avatar } = req.body;
+  if (!fullName || !email || !password) {
     return res.status(400).json({
-      message:
-        "Vui lòng cung cấp đầy đủ thông tin: họ tên, email, mật khẩu, số điện thoại",
+      message: "Vui lòng cung cấp đầy đủ thông tin: họ tên, email, mật khẩu",
     });
   }
 
@@ -21,8 +22,8 @@ const createUser = async (req, res) => {
       fullName,
       email,
       password,
-      phone,
       role,
+      avatar,
     });
     if (!data.data) {
       return res.status(400).json({ message: data.message });
@@ -31,6 +32,20 @@ const createUser = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: "Lỗi server: " + error.message });
   }
+};
+
+const createAdmin = async (req, res) => {
+  const { fullName, email, password, avatar, role } = req.body;
+
+  const data = await createAdminService(
+    email,
+    password,
+    fullName,
+    avatar,
+    role
+  );
+
+  return res.status(200).json(data);
 };
 
 const loginUser = async (req, res) => {
@@ -45,6 +60,29 @@ const loginUser = async (req, res) => {
     const data = await loginUserService({ email, password });
     if (!data.data) {
       return res.status(401).json({ message: data.message });
+    }
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi server: " + error.message });
+  }
+};
+
+const getCurrentUser = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({
+        EC: 1,
+        message: "Không tìm thấy token",
+        data: null,
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const data = await getUserByIdService(decoded.id);
+    console.log("check ", decoded, data);
+    if (!data.data) {
+      return res.status(404).json({ message: data.message });
     }
     return res.status(200).json(data);
   } catch (error) {
@@ -110,8 +148,10 @@ const deleteUser = async (req, res) => {
 module.exports = {
   createUser,
   loginUser,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   updateUser,
   deleteUser,
+  createAdmin,
 };

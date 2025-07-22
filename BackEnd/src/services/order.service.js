@@ -1,19 +1,34 @@
 const Order = require("../models/order");
 const User = require("../models/user");
 const Address = require("../models/address");
-const Card = require("../models/card");
-const CardItem = require("../models/carditem");
+const Cart = require("../models/cart");
+const CartItem = require("../models/cartItem");
 const Payment = require("../models/payment");
+const OrderItem = require("../models/orderItem");
+const Price = require("../models/price");
 
 const createOrderService = async (orderData, userId) => {
   try {
-    const { shippingAddress, paymentMethod } = orderData;
+    const { shippingAddress, paymentMethod, items } = orderData;
+    console.log("Received orderData:", orderData);
+    console.log("User ID:", userId);
 
     // Kiểm tra các trường bắt buộc
-    if (!shippingAddress || !paymentMethod) {
+    if (
+      !shippingAddress ||
+      !paymentMethod ||
+      !items ||
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
+      console.log("Validation failed: Missing or invalid fields", {
+        shippingAddress,
+        paymentMethod,
+        items,
+      });
       return {
         message:
-          "Vui lòng cung cấp địa chỉ giao hàng và phương thức thanh toán",
+          "Vui lòng cung cấp địa chỉ giao hàng, phương thức thanh toán và danh sách sản phẩm",
         data: null,
       };
     }
@@ -21,6 +36,7 @@ const createOrderService = async (orderData, userId) => {
     // Kiểm tra userId tồn tại
     const user = await User.findById(userId);
     if (!user) {
+      console.log("Validation failed: User not found", { userId });
       return {
         message: "Người dùng không tồn tại",
         data: null,
@@ -30,6 +46,10 @@ const createOrderService = async (orderData, userId) => {
     // Kiểm tra địa chỉ giao hàng
     const address = await Address.findById(shippingAddress);
     if (!address || address.userId.toString() !== userId) {
+      console.log("Validation failed: Invalid or unauthorized address", {
+        shippingAddress,
+        userId,
+      });
       return {
         message:
           "Địa chỉ giao hàng không hợp lệ hoặc không thuộc về người dùng",
@@ -37,49 +57,106 @@ const createOrderService = async (orderData, userId) => {
       };
     }
 
-    // Lấy giỏ hàng của người dùng
-    const card = await Card.findOne({ userId }).populate({
-      path: "items",
-      populate: { path: "productId", select: "name" },
+    // Lấy danh sách CartItem được chọn
+    const cartItems = await CartItem.find({ _id: { $in: items } }).populate({
+      path: "productId",
+      select: "name quantity",
     });
-    if (!card || !card.items.length) {
+
+    if (cartItems.length !== items.length) {
+      console.log("Validation failed: Invalid cart items", {
+        items,
+        cartItems,
+      });
       return {
-        message: "Giỏ hàng trống, không thể tạo đơn hàng",
+        message: "Một số mục trong giỏ hàng không hợp lệ",
         data: null,
       };
     }
 
-    // Tính tổng giá
+    // Tính tổng giá và kiểm tra giá sản phẩm
     let total_Price = 0;
-    for (const item of card.items) {
-      total_Price += item.quantity * item.price;
+    const orderItems = [];
+    for (const item of cartItems) {
+      const priceData = await Price.findOne({ sizeId: item.sizeId });
+      if (!priceData) {
+        console.log("Validation failed: Price not found for product", {
+          productId: item.productId.name,
+        });
+        return {
+          message: `Không tìm thấy giá cho sản phẩm ${item.productId.name}`,
+          data: null,
+        };
+      }
+      if (item.productId.quantity < item.quantity) {
+        console.log("Validation failed: Insufficient stock for product", {
+          productId: item.productId.name,
+        });
+        return {
+          message: `Sản phẩm ${item.productId.name} không đủ số lượng trong kho`,
+          data: null,
+        };
+      }
+      total_Price += priceData.price * item.quantity;
     }
 
-    // Tạo thanh toán
+    // Tạo đơn hàng trước
+    const order = await Order.create({
+      userId,
+      items: [], // Sẽ cập nhật sau
+      total_Price,
+      orderstatus: "pending",
+      shippingAddress,
+      paymentId: null, // Sẽ cập nhật sau
+    });
+
+    // Tạo OrderItem với orderId hợp lệ
+    for (const item of cartItems) {
+      const priceData = await Price.findOne({ sizeId: item.sizeId });
+      const orderItem = await OrderItem.create({
+        orderId: order._id,
+        productId: item.productId._id,
+        quantity: item.quantity,
+        price: priceData.price,
+      });
+      orderItems.push(orderItem._id);
+    }
+
+    // Tạo thanh toán với orderId hợp lệ
     const payment = await Payment.create({
       amount: total_Price,
       paymentStatus: "pending",
       paymentMethod,
-      orderId: null, // Sẽ cập nhật sau khi tạo đơn hàng
+      orderId: order._id,
     });
 
-    // Tạo đơn hàng
-    const order = await Order.create({
-      userId,
-      items: card.items.map((item) => item._id),
-      total_Price,
-      orderstatus: "pending",
-      shippingAddress,
+    // Cập nhật paymentId và items trong đơn hàng
+    await Order.findByIdAndUpdate(order._id, {
+      items: orderItems,
       paymentId: payment._id,
     });
 
-    // Cập nhật orderId trong thanh toán
-    await Payment.findByIdAndUpdate(payment._id, { orderId: order._id });
+    // Xóa các CartItem đã chọn
+    await CartItem.deleteMany({ _id: { $in: items } });
 
-    // Xóa các mục trong giỏ hàng
-    await CardItem.deleteMany({ _id: { $in: card.items } });
-    await Card.findByIdAndUpdate(card._id, { items: [] });
-
+    // Cập nhật Cart
+    const cart = await Cart.findOne({ userId });
+    if (cart) {
+      // Tính tổng giá trị các mục đã xóa
+      let totalDeduction = 0;
+      for (const item of cartItems) {
+        const priceData = await Price.findOne({ sizeId: item.sizeId });
+        if (priceData) {
+          totalDeduction += priceData.price * item.quantity;
+        }
+      }
+      // Đảm bảo cart.amount không undefined và trừ đi tổng giá trị
+      cart.amount = (cart.amount || 0) - totalDeduction;
+      cart.amount = Math.max(0, cart.amount); // Đảm bảo amount không âm
+      console.log("Updating cart amount:", cart.amount);
+      await cart.save();
+    }
+    // Trả về kết quả
     return {
       message: "Tạo đơn hàng thành công",
       data: await Order.findById(order._id)
@@ -92,10 +169,12 @@ const createOrderService = async (orderData, userId) => {
         .populate("paymentId", "paymentStatus paymentMethod"),
     };
   } catch (error) {
+    console.error("Error in createOrderService:", error);
     throw new Error("Lỗi khi tạo đơn hàng: " + error.message);
   }
 };
 
+// Các hàm khác giữ nguyên
 const getAllOrdersService = async () => {
   try {
     const orders = await Order.find()
@@ -184,7 +263,6 @@ const updateOrderService = async (id, updateData, userId, userRole) => {
       };
     }
 
-    // Kiểm tra đơn hàng tồn tại
     const order = await Order.findById(id);
     if (!order) {
       return {
@@ -193,7 +271,6 @@ const updateOrderService = async (id, updateData, userId, userRole) => {
       };
     }
 
-    // Kiểm tra quyền chỉnh sửa
     if (userRole !== "admin" && order.userId.toString() !== userId) {
       return {
         message: "Bạn không có quyền chỉnh sửa đơn hàng này",
@@ -201,7 +278,6 @@ const updateOrderService = async (id, updateData, userId, userRole) => {
       };
     }
 
-    // Kiểm tra orderstatus hợp lệ
     if (updateData.orderstatus) {
       const validStatuses = [
         "pending",
@@ -216,7 +292,6 @@ const updateOrderService = async (id, updateData, userId, userRole) => {
           data: null,
         };
       }
-      // Không cho phép cập nhật nếu đơn hàng đã delivered hoặc cancelled
       if (["delivered", "cancelled"].includes(order.orderstatus)) {
         return {
           message: "Không thể cập nhật đơn hàng đã giao hoặc đã hủy",
@@ -225,7 +300,6 @@ const updateOrderService = async (id, updateData, userId, userRole) => {
       }
     }
 
-    // Kiểm tra shippingAddress nếu được cập nhật
     if (updateData.shippingAddress) {
       const address = await Address.findById(updateData.shippingAddress);
       if (!address || address.userId.toString() !== order.userId.toString()) {
@@ -268,7 +342,6 @@ const deleteOrderService = async (id, userId, userRole) => {
       };
     }
 
-    // Kiểm tra quyền xóa
     if (userRole !== "admin" && order.userId.toString() !== userId) {
       return {
         message: "Bạn không có quyền xóa đơn hàng này",
@@ -276,7 +349,6 @@ const deleteOrderService = async (id, userId, userRole) => {
       };
     }
 
-    // Không cho phép xóa nếu đơn hàng đã delivered
     if (order.orderstatus === "delivered") {
       return {
         message: "Không thể xóa đơn hàng đã giao",
@@ -284,14 +356,11 @@ const deleteOrderService = async (id, userId, userRole) => {
       };
     }
 
-    // Xóa thanh toán liên quan
     if (order.paymentId) {
       await Payment.findByIdAndDelete(order.paymentId);
     }
 
-    // Xóa các mục CardItem liên quan
-    await CardItem.deleteMany({ _id: { $in: order.items } });
-
+    await OrderItem.deleteMany({ _id: { $in: order.items } });
     await Order.findByIdAndDelete(id);
     return {
       message: "Xóa đơn hàng thành công",

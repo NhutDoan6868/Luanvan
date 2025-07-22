@@ -1,11 +1,11 @@
-const cardItemService = require("../services/cardItem.service");
+const cartItemService = require("../services/cartItem.service");
 
-const createCardItem = async (req, res) => {
+const createCartItem = async (req, res) => {
   try {
-    const cardItem = await cardItemService.createCardItem(req.body);
+    const cartItem = await cartItemService.createCartItem(req.body);
     res.status(201).json({
       success: true,
-      data: cardItem,
+      data: cartItem,
     });
   } catch (error) {
     res.status(400).json({
@@ -15,12 +15,12 @@ const createCardItem = async (req, res) => {
   }
 };
 
-const getAllCardItems = async (req, res) => {
+const getAllCartItems = async (req, res) => {
   try {
-    const cardItems = await cardItemService.getAllCardItems();
+    const cartItems = await cartItemService.getAllCartItems();
     res.status(200).json({
       success: true,
-      data: cardItems,
+      data: cartItems,
     });
   } catch (error) {
     res.status(500).json({
@@ -30,12 +30,12 @@ const getAllCardItems = async (req, res) => {
   }
 };
 
-const getCardItemById = async (req, res) => {
+const getCartItemById = async (req, res) => {
   try {
-    const cardItem = await cardItemService.getCardItemById(req.params.id);
+    const cartItem = await cartItemService.getCartItemById(req.params.id);
     res.status(200).json({
       success: true,
-      data: cardItem,
+      data: cartItem,
     });
   } catch (error) {
     res.status(404).json({
@@ -45,15 +45,15 @@ const getCardItemById = async (req, res) => {
   }
 };
 
-const updateCardItem = async (req, res) => {
+const updateCartItem = async (req, res) => {
   try {
-    const cardItem = await cardItemService.updateCardItem(
+    const cartItem = await cartItemService.updateCartItem(
       req.params.id,
       req.body
     );
     res.status(200).json({
       success: true,
-      data: cardItem,
+      data: cartItem,
     });
   } catch (error) {
     res.status(400).json({
@@ -63,9 +63,9 @@ const updateCardItem = async (req, res) => {
   }
 };
 
-const deleteCardItem = async (req, res) => {
+const deleteCartItem = async (req, res) => {
   try {
-    const result = await cardItemService.deleteCardItem(req.params.id);
+    const result = await cartItemService.deleteCartItem(req.params.id);
     res.status(200).json({
       success: true,
       message: result.message,
@@ -79,9 +79,9 @@ const deleteCardItem = async (req, res) => {
 };
 
 module.exports = {
-  createCardItem,
-  getAllCardItems,
-  getCardItemById,
-  updateCardItem,
-  deleteCardItem,
+  createCartItem,
+  getAllCartItems,
+  getCartItemById,
+  updateCartItem,
+  deleteCartItem,
 };

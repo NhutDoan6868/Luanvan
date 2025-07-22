@@ -1,0 +1,54 @@
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+
+.grouped-products-container {
+  padding: 24px;
+  max-width: auto; /* Đủ rộng để chứa 4 card (~250px mỗi card) */
+  margin: 0 auto;
+}
+
+.subcategory-section {
+  margin-bottom: 48px;
+}
+
+.subcategory-section h3 {
+  color: #333;
+  font-weight: bold;
+}
+
+.subcategory-section p {
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.product-swiper {
+  width: 100% !important;
+  padding-bottom: 48px; /* Không gian cho pagination */
+}
+
+.product-swiper .swiper-slide-full {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto !important; /* Để Swiper tự tính toán chiều rộng dựa trên slidesPerView */
+  min-width: 250px; /* Đảm bảo mỗi slide đủ rộng cho CardProduct */
+}
+
+.product-swiper .swiper-slide-full .ant-card {
+  width: 355px !important; /* Chiều rộng cố định cho CardProduct */
+  margin: 0 auto; /* Căn giữa card trong slide */
+}
+
+.product-swiper .swiper-button-next,
+.product-swiper .swiper-button-prev {
+  color: #333;
+}
+
+.product-swiper .swiper-pagination-bullet {
+  background: #333;
+}
+
+.product-swiper .swiper-pagination-bullet-active {
+  background: #1890ff;
+}

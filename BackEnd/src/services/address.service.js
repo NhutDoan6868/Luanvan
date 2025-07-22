@@ -3,22 +3,13 @@ const User = require("../models/user");
 
 const createAddressService = async (addressData, userId) => {
   try {
-    const { street, city, state, zipCode, country } = addressData;
+    const { street, city, addressdetails, country } = addressData;
 
     // Kiểm tra các trường bắt buộc
-    if (!street || !city || !state || !zipCode || !country) {
+    if (!street || !city || !addressdetails || !country) {
       return {
         message:
           "Vui lòng cung cấp đầy đủ thông tin: đường, thành phố, tỉnh, mã bưu điện, quốc gia",
-        data: null,
-      };
-    }
-
-    // Kiểm tra định dạng zipCode
-    const zipCodeRegex = /^\d{5,10}$/;
-    if (!zipCodeRegex.test(zipCode)) {
-      return {
-        message: "Mã bưu điện không hợp lệ, phải chứa từ 5 đến 10 chữ số",
         data: null,
       };
     }
@@ -35,8 +26,7 @@ const createAddressService = async (addressData, userId) => {
     const address = await Address.create({
       street,
       city,
-      state,
-      zipCode,
+      addressdetails,
       country,
       userId,
     });
@@ -92,7 +82,7 @@ const getAddressesByUserService = async (userId) => {
     if (!user) {
       return {
         message: "Người dùng không tồn tại",
-        data: null,
+        data: [],
       };
     }
 
@@ -102,15 +92,16 @@ const getAddressesByUserService = async (userId) => {
     );
     return {
       message: "Lấy danh sách địa chỉ của người dùng thành công",
-      data: addresses,
+      data: addresses || [],
     };
   } catch (error) {
-    throw new Error(
-      "Lỗi khi lấy danh sách địa chỉ của người dùng: " + error.message
-    );
+    console.error("Error in getAddressesByUserService:", error.message);
+    return {
+      message: "Lỗi khi lấy danh sách địa chỉ của người dùng: " + error.message,
+      data: [],
+    };
   }
 };
-
 const updateAddressService = async (id, updateData, userId) => {
   try {
     if (!Object.keys(updateData).length) {

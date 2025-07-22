@@ -3,10 +3,10 @@ const Product = require("../models/product");
 
 const createImageService = async (imageData) => {
   try {
-    const { url, altText, product } = imageData;
+    const { url, altText, productId } = imageData;
 
     // Kiểm tra các trường bắt buộc
-    if (!url || !product) {
+    if (!url || !productId) {
       return {
         message: "Vui lòng cung cấp đầy đủ URL hình ảnh và ID sản phẩm",
         data: null,
@@ -23,7 +23,7 @@ const createImageService = async (imageData) => {
     }
 
     // Kiểm tra product tồn tại
-    const productExists = await Product.findById(product);
+    const productExists = await Product.findById(productId);
     if (!productExists) {
       return {
         message: "Sản phẩm không tồn tại",
@@ -34,12 +34,12 @@ const createImageService = async (imageData) => {
     const image = await Image.create({
       url,
       altText: altText || "",
-      product,
+      productId,
     });
 
     return {
       message: "Tạo hình ảnh thành công",
-      data: await Image.findById(image._id).populate("product", "name"),
+      data: await Image.findById(image._id).populate("productId", "name"),
     };
   } catch (error) {
     throw new Error("Lỗi khi tạo hình ảnh: " + error.message);
@@ -48,7 +48,7 @@ const createImageService = async (imageData) => {
 
 const getAllImagesService = async () => {
   try {
-    const images = await Image.find().populate("product", "name");
+    const images = await Image.find().populate("productId", "name");
     return {
       message: "Lấy danh sách hình ảnh thành công",
       data: images,
@@ -60,7 +60,7 @@ const getAllImagesService = async () => {
 
 const getImageByIdService = async (id) => {
   try {
-    const image = await Image.findById(id).populate("product", "name");
+    const image = await Image.findById(id).populate("productId", "name");
     if (!image) {
       return {
         message: "Không tìm thấy hình ảnh",
@@ -78,6 +78,7 @@ const getImageByIdService = async (id) => {
 
 const getImagesByProductService = async (productId) => {
   try {
+    // Kiểm tra sản phẩm tồn tại
     const product = await Product.findById(productId);
     if (!product) {
       return {
@@ -86,14 +87,21 @@ const getImagesByProductService = async (productId) => {
       };
     }
 
-    const images = await Image.find({ product: productId }).populate(
-      "product",
-      "name"
-    );
-    return {
-      message: "Lấy danh sách hình ảnh của sản phẩm thành công",
-      data: images,
-    };
+    // Lấy tất cả ảnh thuộc về productId
+    const images = await Image.find({ productId });
+    console.log("CHECK IMAGES:", images);
+
+    if (images.length > 0) {
+      return {
+        message: "Lấy danh sách hình ảnh của sản phẩm thành công",
+        data: images,
+      };
+    } else {
+      return {
+        message: "Không tìm thấy ảnh cho sản phẩm",
+        data: [],
+      };
+    }
   } catch (error) {
     throw new Error(
       "Lỗi khi lấy danh sách hình ảnh của sản phẩm: " + error.message
@@ -135,7 +143,7 @@ const updateImageService = async (id, updateData) => {
     const image = await Image.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
-    }).populate("product", "name");
+    }).populate("productId", "name");
 
     if (!image) {
       return {
@@ -155,7 +163,7 @@ const updateImageService = async (id, updateData) => {
 
 const deleteImageService = async (id) => {
   try {
-    const image = await Image.findById(id).populate("product", "name");
+    const image = await Image.findById(id).populate("productId", "name");
     if (!image) {
       return {
         message: "Không tìm thấy hình ảnh",

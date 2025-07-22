@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const createUserService = async (userData) => {
   try {
-    const { email, password, fullName, phone } = userData;
+    const { email, password, fullName, phone, avatar = "" } = userData; // Gán giá trị mặc định cho avatar
 
     // Kiểm tra định dạng email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,8 +19,8 @@ const createUserService = async (userData) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return {
-        message: "Email đã được sử dụng",
-        data: null,
+        EC: 1,
+        EM: `Email ${email} đã được sử dụng`,
       };
     }
 
@@ -32,10 +32,15 @@ const createUserService = async (userData) => {
       };
     }
 
+    const defaultAvatar =
+      "http://localhost:8080/public/images/default-avatar.png";
+    const userAvatar = avatar || defaultAvatar;
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       ...userData,
       password: hashedPassword,
+      avatar: userAvatar,
     });
 
     // Loại bỏ mật khẩu khỏi dữ liệu trả về
@@ -43,11 +48,58 @@ const createUserService = async (userData) => {
     delete userWithoutPassword.password;
 
     return {
-      message: "Đăng ký người dùng thành công",
+      EC: 0,
+      EM: "Đăng ký người dùng thành công",
       data: userWithoutPassword,
     };
   } catch (error) {
     throw new Error("Lỗi khi tạo người dùng: " + error.message);
+  }
+};
+
+const createAdminService = async (
+  email,
+  password,
+  fullName,
+  phone,
+  role,
+  avatar = ""
+) => {
+  try {
+    const user = await User.findOne({ email: email });
+    if (user) {
+      return {
+        EC: 0,
+        EM: `Email ${email} đã được sử dụng`,
+      };
+    }
+    const defaultAvatar =
+      "http://localhost:8080/public/images/default-avatar.png";
+    const userAvatar = avatar || defaultAvatar;
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    let result = await User.create({
+      email: email,
+      password: hashPassword,
+      fullName: fullName,
+      avatar: userAvatar,
+      role: role,
+      phone: phone,
+      isAdmin: true,
+    });
+
+    return {
+      EC: 0,
+      EM: "Đăng ký thành công",
+      data: result,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EC: 2,
+      EM: "Đã xảy ra lỗi trong quá trình đăng ký",
+    };
   }
 };
 
@@ -56,6 +108,7 @@ const loginUserService = async ({ email, password }) => {
     const user = await User.findOne({ email });
     if (!user) {
       return {
+        EC: 1,
         message: "Email hoặc mật khẩu không đúng",
         data: null,
       };
@@ -64,6 +117,7 @@ const loginUserService = async ({ email, password }) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return {
+        EC: 1,
         message: "Email hoặc mật khẩu không đúng",
         data: null,
       };
@@ -79,7 +133,8 @@ const loginUserService = async ({ email, password }) => {
     delete userWithoutPassword.password;
 
     return {
-      message: "Đăng nhập thành công",
+      EC: 0,
+      EM: "Đăng nhập thành công",
       data: { user: userWithoutPassword, token },
     };
   } catch (error) {
@@ -185,4 +240,5 @@ module.exports = {
   getUserByIdService,
   updateUserService,
   deleteUserService,
+  createAdminService,
 };

@@ -4,16 +4,16 @@ const {
   createImage,
   getAllImages,
   getImageById,
-  getImagesByProduct,
   updateImage,
   deleteImage,
   authenticateAdmin,
+  getImagesByProductId,
 } = require("../controllers/image.controller");
 
 routerAPi.post("/create", authenticateAdmin, createImage);
 routerAPi.get("/", getAllImages);
 routerAPi.get("/:id", getImageById);
-routerAPi.get("/product/:productId", getImagesByProduct);
+routerAPi.get("/product/:productId", getImagesByProductId);
 routerAPi.put("/:id", authenticateAdmin, updateImage);
 routerAPi.delete("/:id", authenticateAdmin, deleteImage);
 

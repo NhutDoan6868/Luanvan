@@ -27,15 +27,15 @@ const authenticateAdmin = (req, res, next) => {
 };
 
 const createImage = async (req, res) => {
-  const { url, altText, product } = req.body;
-  if (!url || !product) {
+  const { url, altText, productId } = req.body;
+  if (!url || !productId) {
     return res.status(400).json({
       message: "Vui lòng cung cấp đầy đủ URL hình ảnh và ID sản phẩm",
     });
   }
 
   try {
-    const data = await createImageService({ url, altText, product });
+    const data = await createImageService({ url, altText, productId });
     if (!data.data) {
       return res.status(400).json({ message: data.message });
     }
@@ -67,7 +67,7 @@ const getImageById = async (req, res) => {
   }
 };
 
-const getImagesByProduct = async (req, res) => {
+const getImagesByProductId = async (req, res) => {
   const { productId } = req.params;
   try {
     const data = await getImagesByProductService(productId);
@@ -117,7 +117,7 @@ module.exports = {
   createImage,
   getAllImages,
   getImageById,
-  getImagesByProduct,
+  getImagesByProductId,
   updateImage,
   deleteImage,
   authenticateAdmin,

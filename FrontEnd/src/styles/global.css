@@ -1,0 +1,32 @@
+.btn-submit.ant-btn {
+  background-color: rgba(24, 96, 143, 0.9) !important;
+  border-color: rgba(24, 96, 143, 0.9) !important;
+  color: white !important;
+  width: 100% !important;
+  border-radius: 50px !important;
+  padding: 12px !important;
+}
+.btn-submit.ant-btn:hover {
+  background-color: white !important;
+  border-color: rgba(24, 96, 143, 0.9);
+  color: rgba(24, 96, 143, 0.9) !important;
+}
+
+.btn-shopnow.ant-btn {
+  background-color: rgba(24, 96, 143, 0.9) !important;
+  border-color: rgba(24, 96, 143, 0.9) !important;
+  color: white !important;
+  width: 30% !important;
+  height: auto !important;
+  border-radius: 50px !important;
+  padding: 12px !important;
+}
+.btn-shopnow.ant-btn:hover {
+  background-color: white !important;
+  border-color: rgba(24, 96, 143, 0.9);
+  color: rgba(24, 96, 143, 0.9) !important;
+}
+
+h1 {
+  font-size: 48px;
+}

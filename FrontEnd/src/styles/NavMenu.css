@@ -1,0 +1,32 @@
+/* Đảm bảo menu chính không bị giới hạn bởi container */
+.full-width-submenu {
+  position: relative;
+  z-index: 1;
+}
+
+/* Tùy chỉnh danh mục con để full màn hình */
+.full-width-submenu .ant-menu-submenu .ant-menu {
+  width: 1000px !important;
+  position: fixed !important;
+  left: 0;
+  right: 0;
+  top: auto; /* Đảm bảo menu con xuất hiện ngay dưới menu chính */
+  margin: 0;
+  padding: 10px 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex; /* Sắp xếp các mục con theo hàng ngang */
+  justify-content: center; /* Căn giữa các mục con */
+}
+
+/* Tùy chỉnh các mục trong danh mục con */
+.full-width-submenu .ant-menu-submenu .ant-menu-item {
+  display: inline-block;
+  margin: 0 20px;
+  padding: 8px 16px;
+}
+
+/* Đảm bảo danh mục con không bị che bởi các phần tử khác */
+.full-width-submenu .ant-menu-submenu .ant-menu-submenu-popup {
+  z-index: 1;
+}

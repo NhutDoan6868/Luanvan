@@ -6,6 +6,7 @@ const CartItem = require("../models/cartItem");
 const Payment = require("../models/payment");
 const OrderItem = require("../models/orderItem");
 const Price = require("../models/price");
+const ProductPromotion = require("../models/product_promotion");
 
 const createOrderService = async (orderData, userId) => {
   try {
@@ -74,9 +75,21 @@ const createOrderService = async (orderData, userId) => {
       };
     }
 
-    // Tính tổng giá và kiểm tra giá sản phẩm
+    // Tính tổng giá
     let total_Price = 0;
     const orderItems = [];
+
+    // Tạo đơn hàng trước để lấy orderId
+    const order = await Order.create({
+      userId,
+      items: [], // Sẽ cập nhật sau
+      total_Price: 0, // Sẽ cập nhật sau
+      orderstatus: "pending",
+      shippingAddress,
+      paymentId: null, // Sẽ cập nhật sau
+    });
+
+    // Tạo OrderItem với orderId hợp lệ
     for (const item of cartItems) {
       const priceData = await Price.findOne({ sizeId: item.sizeId });
       if (!priceData) {
@@ -97,32 +110,53 @@ const createOrderService = async (orderData, userId) => {
           data: null,
         };
       }
-      total_Price += priceData.price * item.quantity;
-    }
 
-    // Tạo đơn hàng trước
-    const order = await Order.create({
-      userId,
-      items: [], // Sẽ cập nhật sau
-      total_Price,
-      orderstatus: "pending",
-      shippingAddress,
-      paymentId: null, // Sẽ cập nhật sau
-    });
+      // Lấy thông tin khuyến mãi
+      const currentDate = new Date();
+      const productPromotions = await ProductPromotion.find({
+        productId: item.productId._id,
+      })
+        .populate({
+          path: "promotionId",
+          match: {
+            startDate: { $lte: currentDate },
+            endDate: { $gte: currentDate },
+          },
+          select: "name discount startDate endDate",
+        })
+        .lean();
 
-    // Tạo OrderItem với orderId hợp lệ
-    for (const item of cartItems) {
-      const priceData = await Price.findOne({ sizeId: item.sizeId });
+      const validPromotion = productPromotions.find((pp) => pp.promotionId);
+      const promotion =
+        validPromotion && validPromotion.promotionId
+          ? {
+              name: validPromotion.promotionId.name,
+              discount: validPromotion.promotionId.discount,
+              discountedPrice:
+                priceData.price > 0
+                  ? priceData.price *
+                    (1 - validPromotion.promotionId.discount / 100)
+                  : 0,
+              startDate: validPromotion.promotionId.startDate,
+              endDate: validPromotion.promotionId.endDate,
+            }
+          : null;
+
+      // Tính giá cho sản phẩm (sử dụng giá khuyến mãi nếu có)
+      const itemPrice = promotion ? promotion.discountedPrice : priceData.price;
+      total_Price += itemPrice * item.quantity;
+
+      // Tạo OrderItem với orderId
       const orderItem = await OrderItem.create({
-        orderId: order._id,
+        orderId: order._id, // Sử dụng orderId ngay từ đầu
         productId: item.productId._id,
         quantity: item.quantity,
-        price: priceData.price,
+        price: itemPrice, // Lưu giá đã áp dụng khuyến mãi
       });
       orderItems.push(orderItem._id);
     }
 
-    // Tạo thanh toán với orderId hợp lệ
+    // Tạo thanh toán
     const payment = await Payment.create({
       amount: total_Price,
       paymentStatus: "pending",
@@ -130,9 +164,10 @@ const createOrderService = async (orderData, userId) => {
       orderId: order._id,
     });
 
-    // Cập nhật paymentId và items trong đơn hàng
+    // Cập nhật Order với items và total_Price
     await Order.findByIdAndUpdate(order._id, {
       items: orderItems,
+      total_Price,
       paymentId: payment._id,
     });
 
@@ -142,20 +177,35 @@ const createOrderService = async (orderData, userId) => {
     // Cập nhật Cart
     const cart = await Cart.findOne({ userId });
     if (cart) {
-      // Tính tổng giá trị các mục đã xóa
       let totalDeduction = 0;
       for (const item of cartItems) {
         const priceData = await Price.findOne({ sizeId: item.sizeId });
-        if (priceData) {
-          totalDeduction += priceData.price * item.quantity;
-        }
+        const productPromotions = await ProductPromotion.find({
+          productId: item.productId._id,
+        })
+          .populate({
+            path: "promotionId",
+            match: {
+              startDate: { $lte: new Date() },
+              endDate: { $gte: new Date() },
+            },
+            select: "discount",
+          })
+          .lean();
+
+        const validPromotion = productPromotions.find((pp) => pp.promotionId);
+        const itemPrice =
+          validPromotion && validPromotion.promotionId
+            ? priceData.price * (1 - validPromotion.promotionId.discount / 100)
+            : priceData.price;
+        totalDeduction += itemPrice * item.quantity;
       }
-      // Đảm bảo cart.amount không undefined và trừ đi tổng giá trị
       cart.amount = (cart.amount || 0) - totalDeduction;
       cart.amount = Math.max(0, cart.amount); // Đảm bảo amount không âm
       console.log("Updating cart amount:", cart.amount);
       await cart.save();
     }
+
     // Trả về kết quả
     return {
       message: "Tạo đơn hàng thành công",
@@ -173,7 +223,6 @@ const createOrderService = async (orderData, userId) => {
     throw new Error("Lỗi khi tạo đơn hàng: " + error.message);
   }
 };
-
 // Các hàm khác giữ nguyên
 const getAllOrdersService = async () => {
   try {

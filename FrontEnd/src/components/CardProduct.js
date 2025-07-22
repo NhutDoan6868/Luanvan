@@ -14,11 +14,22 @@ function CardProduct({ Product }) {
     handleNavigate(`details/${Product._id}`);
   };
 
+  // Định dạng giá tiền sang VNĐ
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
+  };
+
+  // Kiểm tra xem sản phẩm có đang sale không
+  const isOnSale = Product?.promotion && Product?.promotion.discount > 0;
+
   return (
     <Card
       hoverable
       cover={
-        <div style={{ padding: "0", overflow: "hidden" }}>
+        <div style={{ position: "relative", padding: "0", overflow: "hidden" }}>
           <img
             className="img"
             alt={Product?.name}
@@ -32,6 +43,24 @@ function CardProduct({ Product }) {
               overflow: "hidden",
             }}
           />
+          {isOnSale && (
+            <div
+              className="sale-badge"
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                backgroundColor: "#ff4d4f",
+                color: "white",
+                padding: "4px 8px",
+                borderRadius: 4,
+                fontSize: 14,
+                fontWeight: "bold",
+              }}
+            >
+              {Product.promotion.discount}% OFF
+            </div>
+          )}
         </div>
       }
       onClick={onCardClick}
@@ -39,8 +68,45 @@ function CardProduct({ Product }) {
     >
       <Meta
         title={Product?.name}
-        description={`Giá: ${Product?.minPrice} VNĐ`}
-        style={{ minHeight: 50, color: "black", fontSize: 16 }}
+        description={
+          <div>
+            {isOnSale ? (
+              <>
+                <span
+                  style={{
+                    color: "black",
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    marginRight: 8,
+                  }}
+                >
+                  {formatPrice(Product.promotion.discountedPrice)}
+                </span>
+                <span
+                  style={{
+                    color: "#888",
+                    fontSize: 14,
+                    textDecoration: "line-through",
+                  }}
+                >
+                  {formatPrice(Product.minPrice)}
+                </span>
+              </>
+            ) : (
+              <span
+                style={{
+                  color: "black",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  marginRight: 8,
+                }}
+              >
+                {formatPrice(Product?.minPrice)}
+              </span>
+            )}
+          </div>
+        }
+        style={{ minHeight: 50 }}
       />
     </Card>
   );

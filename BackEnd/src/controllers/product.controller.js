@@ -9,7 +9,8 @@ const {
   deleteSizeService,
   setProductPriceService,
   deletePriceService,
-  getProductsGroupedBySubcategoryService, // Thêm service mới
+  getProductsGroupedBySubcategoryService,
+  getSaleProductsService, // Thêm service mới
 } = require("../services/product.service");
 
 const createProduct = async (req, res) => {
@@ -182,6 +183,14 @@ const deletePrice = async (req, res) => {
     return res.status(500).json({ message: "Lỗi server: " + error.message });
   }
 };
+const getSaleProducts = async (req, res) => {
+  try {
+    const data = await getSaleProductsService();
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi server: " + error.message });
+  }
+};
 
 module.exports = {
   createProduct,
@@ -194,5 +203,6 @@ module.exports = {
   deleteSize,
   setProductPrice,
   deletePrice,
+  getSaleProducts,
   getProductsGroupedBySubcategory, // Xuất hàm mới
 };

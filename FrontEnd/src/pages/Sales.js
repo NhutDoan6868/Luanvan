@@ -1,16 +1,21 @@
-import { Col, Layout, Row } from "antd";
+import { Col, Row, Alert } from "antd";
 import CardProduct from "../components/CardProduct";
-
-import { useEffect, useState } from "react";
 import { useGetSaleProduct } from "../hooks/useGetSaleProduct";
 
 function Sales() {
-  const [isSale, setIsSale] = useState(true);
-
-  const { data, isLoading, error } = useGetSaleProduct(isSale);
-
-  if (isLoading) return <div> ...Loading</div>;
-  if (!data) return <div>Không có sp đang Sale</div>;
+  const { data, isLoading, error } = useGetSaleProduct();
+  console.log("chech data", data);
+  if (isLoading) return <div>Đang tải...</div>;
+  if (error)
+    return (
+      <Alert
+        message="Lỗi khi tải sản phẩm sale"
+        description={error.message}
+        type="error"
+      />
+    );
+  if (!data?.data || data?.data.length === 0)
+    return <div>Không có sản phẩm đang sale</div>;
   return (
     <Row>
       <Col span={20} offset={2}>
@@ -24,7 +29,7 @@ function Sales() {
               </Col>
             </Row>
             <Row gutter={[16, 16]}>
-              {data.map((product) => (
+              {data?.data?.map((product) => (
                 <Col span={6} key={product._id}>
                   <CardProduct Product={product} />
                 </Col>

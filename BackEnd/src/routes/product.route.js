@@ -11,11 +11,14 @@ const {
   deleteSize,
   setProductPrice,
   deletePrice,
-  getProductsGroupedBySubcategory, // Thêm hàm mới
+  getProductsGroupedBySubcategory,
+  getSaleProducts, // Thêm hàm mới
 } = require("../controllers/product.controller");
 
 routerAPi.post("/create", createProduct);
 routerAPi.get("/", getAllProducts);
+routerAPi.get("/sale", getSaleProducts);
+
 routerAPi.get("/grouped-by-subcategory", getProductsGroupedBySubcategory); // Thêm endpoint mới
 routerAPi.get("/:id", getProductById);
 routerAPi.put("/:id", updateProduct);

@@ -43,8 +43,8 @@ function CheckOutPage() {
     return selectedItems.reduce((total, itemId) => {
       const item = data.data.items.find((i) => i._id === itemId);
       if (!item) return total;
-      const price = item.discount
-        ? item.price * (1 - item.discount / 100)
+      const price = item?.promotion?.discount
+        ? item.price * (1 - item.promotion.discount / 100)
         : item.price;
       return total + price * item.quantity;
     }, 0);
@@ -122,17 +122,17 @@ function CheckOutPage() {
                         <p>{item.productId.name}</p>
                         <p>
                           Giá:{" "}
-                          {item.discount
+                          {item?.promotion?.discount
                             ? (
                                 item.price *
-                                (1 - item.discount / 100)
+                                (1 - item.promotion.discount / 100)
                               ).toLocaleString()
                             : item.price.toLocaleString()}{" "}
                           VNĐ
-                          {item.discount && (
+                          {item?.promotion?.discount && (
                             <span style={{ color: "#faad14" }}>
                               {" "}
-                              ({item.discount}% giảm)
+                              ({item.promotion.discount}% giảm)
                             </span>
                           )}
                         </p>

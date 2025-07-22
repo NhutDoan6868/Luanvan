@@ -13,34 +13,29 @@
 }
 .img {
   transition: transform 2s ease;
-
   border-radius: "12px";
   display: "block";
 }
-
 .img:hover {
+  cursor: pointer;
   transform: scale(1.5);
   border-radius: "12px";
 }
 .imgSmall {
   transition: transform 0.3s ease;
-
   border-radius: "12px";
   display: "block";
 }
-
 .imgSmall:hover {
   transform: scale(1.5);
   border-radius: "12px";
 }
-
 .btn {
   border-color: white;
 }
 .btn:hover {
   border-color: rgba(24, 96, 143, 0.9);
 }
-
 .btn-size {
   /* Hình dạng tròn */
   border-radius: 50%;
@@ -49,34 +44,28 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
   /* Màu sắc và viền */
   background-color: rgba(24, 96, 143, 0.9); /* Màu nền xanh dương */
   color: #ffffff; /* Màu chữ trắng */
   border: none;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ */
-
   /* Font chữ và văn bản */
   font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif; /* Font hỗ trợ tiếng Việt */
   font-size: 16px; /* Kích thước chữ */
   font-weight: 500; /* Độ đậm chữ */
   text-align: center;
   line-height: 1; /* Đảm bảo chữ căn giữa */
-
   /* Hiệu ứng khi hover */
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
 .btn-size:hover {
   background-color: rgba(24, 96, 143, 2); /* Màu nền khi hover */
   transform: scale(1.05); /* Phóng to nhẹ khi hover */
 }
-
 .btn-size:active {
   transform: scale(0.95); /* Thu nhỏ nhẹ khi nhấn */
 }
-
 .price {
   color: red;
   font-size: 32px;

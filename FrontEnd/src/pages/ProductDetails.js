@@ -1,5 +1,5 @@
 import { Button, Col, notification, Rate, Row } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetProductById } from "../hooks/useGetProductById";
 import { useAddItemToCart } from "../hooks/useAddItemToCart";
@@ -12,9 +12,18 @@ function ProductDetails() {
   const [imageLarge, setImageLarge] = useState(null);
   const [size, setSize] = useState(null);
   const { auth, setAuth } = useContext(AuthContext);
-  console.log("check auth", auth);
   const { data, isLoading, error } = useGetProductById(productId);
   const { addItemToCart, isLoading: isAddingToCart } = useAddItemToCart();
+
+  // Tự động chọn kích thước nhỏ nhất khi dữ liệu sản phẩm được tải
+  useEffect(() => {
+    if (data?.sizes?.length > 0 && !size) {
+      const smallestSize = data.sizes.reduce((min, current) =>
+        min.price < current.price ? min : current
+      );
+      setSize(smallestSize._id);
+    }
+  }, [data, size]);
 
   const handleClick = (imageUrl) => {
     setImageLarge(imageUrl);
@@ -47,6 +56,26 @@ function ProductDetails() {
       sizeId: size,
     });
   };
+
+  // Định dạng giá tiền sang VNĐ
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
+  };
+
+  // Kiểm tra xem sản phẩm có đang sale không
+  const isOnSale = data?.promotion && data?.promotion.discount > 0;
+
+  // Tìm giá của size đã chọn
+  const selectedSize = data?.sizes?.find((s) => s._id === size);
+
+  const currentPrice = selectedSize?.price || data?.minPrice || 0;
+  const discountedPrice =
+    isOnSale && selectedSize
+      ? currentPrice * (1 - data.promotion.discount / 100)
+      : currentPrice;
 
   const h1Style = {
     fontSize: "60px",
@@ -108,7 +137,7 @@ function ProductDetails() {
             )}
           </Col>
           <Col span={20}>
-            <div style={{ overflow: "hidden" }}>
+            <div style={{ position: "relative", overflow: "hidden" }}>
               <img
                 className="img"
                 preview={false}
@@ -118,9 +147,29 @@ function ProductDetails() {
                   height: 800,
                   borderRadius: "24px",
                 }}
-                src={data?.imageURL || imageLarge}
+                src={imageLarge || data?.imageURL}
                 key={`${productId}`}
               />
+              {isOnSale && (
+                <div
+                  className="sale-badge"
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    backgroundColor: "#ff4d4f",
+                    color: "white",
+                    padding: "6px 12px",
+                    borderRadius: "4px",
+                    fontSize: 16,
+                    fontWeight: "500",
+                    fontFamily: '"Roboto", sans-serif',
+                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
+                  }}
+                >
+                  {data.promotion.discount}% OFF
+                </div>
+              )}
             </div>
           </Col>
         </Row>
@@ -139,9 +188,52 @@ function ProductDetails() {
         <Row>
           <h2 className="price">
             Giá:
-            {data?.minPrice
-              ? ` ${data.minPrice.toLocaleString()} VNĐ`
-              : "Chưa có giá"}
+            {size && selectedSize ? (
+              isOnSale ? (
+                <>
+                  <span
+                    style={{
+                      color: "red",
+                      fontSize: 32,
+                      fontWeight: "bold",
+                      marginLeft: 8,
+                      marginRight: 8,
+                    }}
+                  >
+                    {formatPrice(discountedPrice)}
+                  </span>
+                  <span
+                    style={{
+                      color: "#888",
+                      fontSize: 24,
+                      textDecoration: "line-through",
+                    }}
+                  >
+                    {formatPrice(currentPrice)}
+                  </span>
+                </>
+              ) : (
+                <span
+                  style={{
+                    color: "red",
+                    fontSize: 32,
+                    marginLeft: 8,
+                  }}
+                >
+                  {formatPrice(currentPrice)}
+                </span>
+              )
+            ) : (
+              <span
+                style={{
+                  color: "red",
+                  fontSize: 32,
+                  marginLeft: 8,
+                }}
+              >
+                {data?.minPrice ? formatPrice(data.minPrice) : "Chưa có giá"}
+              </span>
+            )}
           </h2>
         </Row>
         <Row
@@ -156,57 +248,26 @@ function ProductDetails() {
           </Col>
           {data?.sizes?.length > 0 ? (
             <>
-              <Col
-                span={2}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  className={`btn-size ${
-                    size === data.sizes[0]?._id ? "active" : ""
-                  }`}
-                  onClick={() => handleSize(data.sizes[0]?._id)}
+              {data.sizes.map((sizeItem) => (
+                <Col
+                  key={sizeItem._id}
+                  span={2}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
                 >
-                  Nhỏ
-                </button>
-              </Col>
-              <Col
-                span={2}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  className={`btn-size ${
-                    size === data.sizes[1]?._id ? "active" : ""
-                  }`}
-                  onClick={() => handleSize(data.sizes[1]?._id)}
-                >
-                  Vừa
-                </button>
-              </Col>
-              <Col
-                span={2}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  className={`btn-size ${
-                    size === data.sizes[2]?._id ? "active" : ""
-                  }`}
-                  onClick={() => handleSize(data.sizes[2]?._id)}
-                >
-                  Lớn
-                </button>
-              </Col>
+                  <button
+                    className={`btn-size ${
+                      size === sizeItem._id ? "active" : ""
+                    }`}
+                    onClick={() => handleSize(sizeItem._id)}
+                  >
+                    {sizeItem.name}
+                  </button>
+                </Col>
+              ))}
             </>
           ) : (
             <Col>

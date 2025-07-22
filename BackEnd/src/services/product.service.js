@@ -645,6 +645,151 @@ const deletePriceService = async (productId, sizeId) => {
     throw new Error("Lỗi khi xóa giá: " + error.message);
   }
 };
+const getSaleProductsService = async () => {
+  try {
+    console.log("Starting getSaleProductsService");
+    const currentDate = new Date();
+    console.log("Current date:", currentDate);
+
+    // Truy vấn ProductPromotion và populate
+    const productPromotions = await ProductPromotion.find()
+      .populate({
+        path: "promotionId",
+        match: {
+          startDate: { $lte: currentDate },
+          endDate: { $gte: currentDate },
+        },
+        select: "name discount startDate endDate",
+      })
+      .populate({
+        path: "productId",
+        select: "name description quantity imageURL subcategoryId",
+        populate: { path: "subcategoryId", select: "name" },
+      })
+      .lean();
+
+    console.log("Product promotions found:", productPromotions.length);
+    if (!productPromotions.length) {
+      console.log("No product promotions found");
+      return {
+        message: "Không tìm thấy khuyến mãi nào",
+        data: [],
+      };
+    }
+
+    const saleProducts = await Promise.all(
+      productPromotions
+        .filter((pp) => {
+          const isValid = pp.promotionId && pp.productId;
+          if (!isValid) {
+            console.log("Filtered out invalid promotion or product:", {
+              promotionId: pp.promotionId,
+              productId: pp.productId,
+            });
+          }
+          return isValid;
+        })
+        .map(async (pp) => {
+          try {
+            console.log("Processing product:", pp.productId?.name || "Unknown");
+            const sizes = await Size.find({
+              productId: pp.productId._id,
+            }).lean();
+            console.log("Sizes found:", sizes.length);
+
+            const sizeIds = sizes.map((size) => size._id);
+            const prices = await Price.find({ sizeId: { $in: sizeIds } })
+              .lean()
+              .select("price sizeId");
+            console.log("Prices found:", prices.length);
+
+            const minPrice =
+              prices.length > 0 ? Math.min(...prices.map((p) => p.price)) : 0;
+            console.log("Min price calculated:", minPrice);
+
+            const images = await Image.find({ productId: pp.productId._id })
+              .lean()
+              .select("url altText");
+            console.log("Images found:", images.length);
+
+            if (!pp.promotionId) {
+              console.log(
+                "No valid promotion for product:",
+                pp.productId?.name
+              );
+              return null;
+            }
+
+            const promotion = {
+              name: pp.promotionId.name,
+              discount: pp.promotionId.discount,
+              discountedPrice:
+                minPrice > 0
+                  ? minPrice * (1 - pp.promotionId.discount / 100)
+                  : 0,
+              startDate: pp.promotionId.startDate,
+              endDate: pp.promotionId.endDate,
+            };
+
+            return {
+              _id: pp.productId._id,
+              name: pp.productId.name,
+              description: pp.productId.description,
+              quantity: pp.productId.quantity,
+              imageURL: pp.productId.imageURL,
+              subcategoryId: pp.productId.subcategoryId,
+              minPrice,
+              sizes: sizes.map((size) => ({
+                _id: size._id,
+                name: size.name,
+                price:
+                  prices.find(
+                    (p) => p.sizeId.toString() === size._id.toString()
+                  )?.price || 0,
+              })),
+              images,
+              promotion,
+            };
+          } catch (err) {
+            console.error(
+              "Error processing product:",
+              pp.productId?.name,
+              err.message
+            );
+            return null;
+          }
+        })
+    );
+
+    // Lọc bỏ các sản phẩm null (do lỗi xử lý)
+    const validSaleProducts = saleProducts.filter(
+      (product) => product !== null
+    );
+    console.log("Valid sale products:", validSaleProducts.length);
+
+    if (!validSaleProducts.length) {
+      console.log("No valid sale products after processing");
+      return {
+        message: "Không tìm thấy sản phẩm đang sale",
+        data: [],
+      };
+    }
+
+    return {
+      message: "Lấy danh sách sản phẩm đang sale thành công",
+      data: validSaleProducts,
+    };
+  } catch (error) {
+    console.error(
+      "Error in getSaleProductsService:",
+      error.message,
+      error.stack
+    );
+    throw new Error(
+      "Lỗi khi lấy danh sách sản phẩm đang sale: " + error.message
+    );
+  }
+};
 
 module.exports = {
   createProductService,
@@ -657,5 +802,6 @@ module.exports = {
   deleteSizeService,
   setProductPriceService,
   deletePriceService,
+  getSaleProductsService,
   getProductsGroupedBySubcategoryService, // Xuất hàm mới
 };

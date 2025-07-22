@@ -146,7 +146,7 @@ const AdminOrderManagePage = () => {
       render: (method) => {
         const methodMap = {
           cash_on_delivery: "Thanh toán khi nhận hàng",
-          credit_card: "Thẻ tín dụng",
+          credit_cart: "Thẻ tín dụng",
           bank_transfer: "Chuyển khoản ngân hàng",
         };
         return methodMap[method.paymentMethod] || method.paymentMethod;
@@ -260,13 +260,13 @@ const AdminOrderManagePage = () => {
                     {item.productId.name} - Số lượng: {item.quantity} - Giá:{" "}
                     {(
                       item.price *
-                      (1 - (item.discount || 0) / 100)
+                      (1 - (item?.promotion?.discount || 0) / 100)
                     ).toLocaleString()}{" "}
                     VNĐ
-                    {item.discount && (
+                    {item?.promotion?.discount && (
                       <span style={{ color: "#faad14" }}>
                         {" "}
-                        ({item.discount}% giảm)
+                        ({item?.promotion?.discount}% giảm)
                       </span>
                     )}
                   </li>

@@ -36,7 +36,7 @@
 }
 
 .product-swiper .swiper-slide-full .ant-card {
-  width: 355px !important; /* Chiều rộng cố định cho CardProduct */
+  width: 365px !important; /* Chiều rộng cố định cho CardProduct */
   margin: 0 auto; /* Căn giữa card trong slide */
 }
 

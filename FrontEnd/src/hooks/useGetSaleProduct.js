@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getSaleProductApi } from "../services/productSale.service";
 
-export const useGetSaleProduct = (isSale) => {
+export const useGetSaleProduct = () => {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["products", isSale],
-    queryFn: () => getSaleProductApi(isSale),
+    queryKey: ["saleProducts"],
+    queryFn: () => getSaleProductApi(),
   });
   return {
     data,

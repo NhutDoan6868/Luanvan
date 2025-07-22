@@ -15,7 +15,7 @@ function CartItemCustomize({ items, cartId, onCheckboxChange, isChecked }) {
   const { refetch } = useGetCartByUser();
 
   const handleNavigate = (path) => {
-    navigate("/" + path);
+    navigate(`/${path}`);
   };
 
   const handleQuantityChange = async (value) => {
@@ -97,7 +97,7 @@ function CartItemCustomize({ items, cartId, onCheckboxChange, isChecked }) {
           <Button
             type="link"
             style={{ marginLeft: 8 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => handleNavigate(`details/${items.productId._id}`)} // Sửa lỗi ở đây
           >
             Tìm sản phẩm trong cửa hàng
           </Button>

@@ -1,4 +1,4 @@
-import { Button, Col, notification, Rate, Row } from "antd";
+import { Button, Col, Image, InputNumber, notification, Rate, Row } from "antd";
 import { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetProductById } from "../hooks/useGetProductById";
@@ -13,6 +13,8 @@ function ProductDetails() {
   const [size, setSize] = useState(null);
   const { auth, setAuth } = useContext(AuthContext);
   const { data, isLoading, error } = useGetProductById(productId);
+  const [quantity, setQuantity] = useState(1); // State để quản lý số lượng
+
   const { addItemToCart, isLoading: isAddingToCart } = useAddItemToCart();
 
   // Tự động chọn kích thước nhỏ nhất khi dữ liệu sản phẩm được tải
@@ -31,6 +33,11 @@ function ProductDetails() {
 
   const handleSize = (sizeId) => {
     setSize(sizeId);
+  };
+  const handleQuantityChange = (value) => {
+    if (value >= 1) {
+      setQuantity(value);
+    }
   };
 
   const handleAddCart = () => {
@@ -138,18 +145,7 @@ function ProductDetails() {
           </Col>
           <Col span={20}>
             <div style={{ position: "relative", overflow: "hidden" }}>
-              <img
-                className="img"
-                preview={false}
-                style={{
-                  width: "100%",
-                  minHeight: 400,
-                  height: 800,
-                  borderRadius: "24px",
-                }}
-                src={imageLarge || data?.imageURL}
-                key={`${productId}`}
-              />
+              <Image src={imageLarge || data?.imageURL} key={`${productId}`} />
               {isOnSale && (
                 <div
                   className="sale-badge"
@@ -274,6 +270,20 @@ function ProductDetails() {
               <div>Chưa có kích thước</div>
             </Col>
           )}
+        </Row>
+        <Row>
+          <Col>
+            <h2 style={{ ...h2Style, textAlign: "center" }}>Số lượng:</h2>
+          </Col>
+          <Col>
+            <InputNumber
+              min={1}
+              style={{ width: 100 }}
+              value={quantity}
+              size="large"
+              onChange={handleQuantityChange}
+            ></InputNumber>
+          </Col>
         </Row>
 
         <Row style={{ padding: "24px" }}>

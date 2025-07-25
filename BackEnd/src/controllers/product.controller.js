@@ -50,10 +50,12 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const { subcategoryId, categoryId } = req.query;
+    const { subcategoryId, categoryId, sortBy, order } = req.query;
     const data = await getAllProductsService({
       subcategoryId,
       categoryId,
+      sortBy,
+      order,
     });
     return res.status(200).json(data);
   } catch (error) {

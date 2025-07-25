@@ -7,6 +7,7 @@ const Payment = require("../models/payment");
 const OrderItem = require("../models/orderItem");
 const Price = require("../models/price");
 const ProductPromotion = require("../models/product_promotion");
+const Product = require("../models/product");
 
 const createOrderService = async (orderData, userId) => {
   try {
@@ -154,6 +155,13 @@ const createOrderService = async (orderData, userId) => {
         price: itemPrice, // Lưu giá đã áp dụng khuyến mãi
       });
       orderItems.push(orderItem._id);
+
+      // Cập nhật soldQuantity và quantity trong Product
+      await Product.findByIdAndUpdate(item.productId._id, {
+        $inc: {
+          soldQuantity: item.quantity, // Tăng số lượng đã bán
+        },
+      });
     }
 
     // Tạo thanh toán

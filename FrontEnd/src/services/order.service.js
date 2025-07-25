@@ -59,6 +59,7 @@ export const getOrdersByUserApi = async () => {
     const response = await axios.get("/api/order/user/me", {
       headers: getAuthHeaders(),
     });
+    console.log("SERVICE API OBU", response.data);
     return response.data;
   } catch (error) {
     const errorMessage =

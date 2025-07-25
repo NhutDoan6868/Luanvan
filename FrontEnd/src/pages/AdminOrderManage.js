@@ -19,6 +19,21 @@ const AdminOrderManagePage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderStatus, setOrderStatus] = useState("");
 
+  // Hàm ánh xạ trạng thái đơn hàng sang màu và tên tiếng Việt
+  const getStatusTag = (status) => {
+    const statusMap = {
+      pending: { color: "blue", text: "Đang chờ xử lý" },
+      confirmed: { color: "cyan", text: "Đã xác nhận" },
+      shipped: { color: "orange", text: "Đang giao hàng" },
+      delivered: { color: "green", text: "Đã giao" },
+      cancelled: { color: "red", text: "Đã hủy" },
+    };
+    const { color, text } = statusMap[status] || {
+      color: "default",
+      text: "Không xác định",
+    };
+    return <Tag color={color}>{text}</Tag>;
+  };
   // Lấy danh sách đơn hàng
   const fetchOrders = async () => {
     setLoading(true);
@@ -63,7 +78,6 @@ const AdminOrderManagePage = () => {
       const success = await updateOrderApi(selectedOrder._id, {
         orderstatus: orderStatus,
       });
-      console.log("sssss", success);
       if (success) {
         setIsModalVisible(false);
         fetchOrders();
@@ -130,14 +144,7 @@ const AdminOrderManagePage = () => {
       title: "Trạng thái",
       dataIndex: "orderstatus",
       key: "orderstatus",
-      render: (status) => {
-        let color = "default";
-        if (status === "pending") color = "orange";
-        if (status === "confirmed") color = "green";
-        if (status === "cancelled") color = "red";
-        if (status === "delivered") color = "blue";
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
+      render: getStatusTag,
     },
     {
       title: "Phương thức thanh toán",
@@ -146,10 +153,12 @@ const AdminOrderManagePage = () => {
       render: (method) => {
         const methodMap = {
           cash_on_delivery: "Thanh toán khi nhận hàng",
-          credit_cart: "Thẻ tín dụng",
+          credit_card: "Thẻ tín dụng", // Sửa lỗi chính tả từ 'credit_cart' thành 'credit_card'
           bank_transfer: "Chuyển khoản ngân hàng",
         };
-        return methodMap[method.paymentMethod] || method.paymentMethod;
+        return method && method.paymentMethod
+          ? methodMap[method.paymentMethod] || method.paymentMethod
+          : "Không xác định";
       },
     },
     {

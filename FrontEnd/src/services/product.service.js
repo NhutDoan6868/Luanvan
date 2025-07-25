@@ -3,14 +3,25 @@ import axios from "../utils/axios.customize";
 const API_URL = "http://localhost:8080/api/product";
 
 // Lấy danh sách tất cả sản phẩm
-export const getAllProductApi = async () => {
+export const getAllProductApi = async ({
+  subcategoryId,
+  categoryId,
+  sortBy,
+  order,
+} = {}) => {
   try {
-    const response = await axios.get(API_URL);
+    const params = {};
+    if (subcategoryId) params.subcategoryId = subcategoryId;
+    if (categoryId) params.categoryId = categoryId;
+    if (sortBy) params.sortBy = sortBy;
+    if (order) params.order = order;
+
+    const response = await axios.get(API_URL, { params });
     console.log("API getAllProductApi response:", response);
     if (!response.data) {
       throw new Error("Dữ liệu trả về từ API rỗng");
     }
-    return response.data;
+    return response.data; // Trả về mảng sản phẩm từ response.data.data
   } catch (error) {
     console.error("API getAllProductApi error:", error.response || error);
     throw new Error(

@@ -33,23 +33,6 @@ function NavMenu() {
       key: "products",
       label: "Sản Phẩm",
       path: "/products",
-      children: [
-        {
-          key: "category1",
-          label: "Danh Mục 1",
-          path: "/products/category1",
-        },
-        {
-          key: "category2",
-          label: "Danh Mục 2",
-          path: "/products/category2",
-        },
-        {
-          key: "category3",
-          label: "Danh Mục 3",
-          path: "/products/category3",
-        },
-      ],
     },
     {
       key: "sales",

@@ -74,11 +74,15 @@ const createProductService = async (productData) => {
   }
 };
 
-const getAllProductsService = async ({ subcategoryId, categoryId }) => {
+const getAllProductsService = async ({
+  subcategoryId,
+  categoryId,
+  sortBy,
+  order,
+}) => {
   try {
     let query = {};
 
-    // Kiểm tra nếu có subcategoryId
     if (subcategoryId) {
       const subcategory = await Subcategory.findById(subcategoryId);
       if (!subcategory) {
@@ -102,7 +106,7 @@ const getAllProductsService = async ({ subcategoryId, categoryId }) => {
       query = { subcategoryId: { $in: subcategoryIds } };
     }
 
-    const products = await Product.find(query)
+    let products = await Product.find(query)
       .populate("subcategoryId", "name")
       .lean();
 
@@ -172,6 +176,26 @@ const getAllProductsService = async ({ subcategoryId, categoryId }) => {
         };
       })
     );
+
+    // Sắp xếp sản phẩm theo sortBy và order
+    if (sortBy && order) {
+      productsWithDetails.sort((a, b) => {
+        if (sortBy === "name") {
+          return order === "asc"
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name);
+        } else if (sortBy === "price") {
+          const aPrice = a.minPrice || 0;
+          const bPrice = b.minPrice || 0;
+          return order === "asc" ? aPrice - bPrice : bPrice - aPrice;
+        } else if (sortBy === "soldQuantity") {
+          return order === "asc"
+            ? a.soldQuantity - b.soldQuantity
+            : b.soldQuantity - a.soldQuantity;
+        }
+        return 0;
+      });
+    }
 
     return {
       message: "Lấy danh sách sản phẩm thành công",

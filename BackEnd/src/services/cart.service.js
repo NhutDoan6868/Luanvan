@@ -76,7 +76,7 @@ const addItemToCartService = async (userId, itemData) => {
     // Kiểm tra số lượng tồn kho
     if (product.quantity < quantity) {
       return {
-        message: "Số lượng sản phẩm trong kho không đủ",
+        message: `Số lượng sản phẩm trong kho không đủ. Chỉ còn ${product.quantity} sản phẩm.`,
         data: null,
       };
     }
@@ -91,7 +91,6 @@ const addItemToCartService = async (userId, itemData) => {
     }
 
     // Lấy giá sản phẩm từ Price dựa trên sizeId
-    const Price = require("../models/price");
     const priceData = await Price.findOne({ sizeId });
     if (!priceData) {
       return {
@@ -108,7 +107,6 @@ const addItemToCartService = async (userId, itemData) => {
     }
 
     // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-    const CartItem = require("../models/cartItem");
     const existingItem = await CartItem.findOne({
       cartId: cart._id,
       productId,
@@ -117,8 +115,15 @@ const addItemToCartService = async (userId, itemData) => {
 
     let updatedCart;
     if (existingItem) {
-      // Cập nhật số lượng nếu sản phẩm đã tồn tại
+      // Kiểm tra tổng số lượng (hiện tại + thêm mới) so với tồn kho
       const newQuantity = existingItem.quantity + quantity;
+      if (product.quantity < newQuantity) {
+        return {
+          message: `Số lượng yêu cầu vượt quá tồn kho. Chỉ còn ${product.quantity} sản phẩm.`,
+          data: null,
+        };
+      }
+      // Cập nhật số lượng nếu sản phẩm đã tồn tại
       await CartItem.findByIdAndUpdate(existingItem._id, {
         quantity: newQuantity,
       });
@@ -221,7 +226,7 @@ const getCartByUserService = async (userId) => {
     );
 
     // Lấy tất cả ProductPromotion liên quan đến các productId trong giỏ hàng
-    const productIds = cartItems.map((item) => item.productId._id); // Sử dụng _id của productId
+    const productIds = cartItems.map((item) => item.productId._id);
     const currentDate = new Date();
     console.log("Current Date:", currentDate);
     const productPromotions = await ProductPromotion.find({
@@ -288,7 +293,7 @@ const getCartByUserService = async (userId) => {
         // Kiểm tra khuyến mãi cho sản phẩm
         const productPromotion = promotionMap.get(
           item.productId._id.toString()
-        ); // Sử dụng _id của productId
+        );
         console.log(
           `Product Promotion for ${item.productId._id}:`,
           productPromotion
@@ -417,7 +422,7 @@ const updateCartItemService = async (cartId, itemId, updateData, userId) => {
         requestedQuantity: quantity,
       });
       return {
-        message: "Số lượng sản phẩm trong kho không đủ",
+        message: `Số lượng yêu cầu vượt quá tồn kho. Chỉ còn ${product.quantity} sản phẩm.`,
         data: null,
       };
     }
@@ -454,15 +459,10 @@ const updateCartItemService = async (cartId, itemId, updateData, userId) => {
 
     // Lấy dữ liệu giỏ hàng sau khi cập nhật
     console.log("Fetching updated cart", { cartId });
-    const updatedCart = await Cart.findById(cartId)
-      .populate("userId", "fullName")
-      .populate({
-        path: "items",
-        populate: [
-          { path: "productId", select: "name imageURL quantity" },
-          { path: "sizeId", select: "name" },
-        ],
-      });
+    const updatedCart = await Cart.findById(cartId).populate(
+      "userId",
+      "fullName"
+    );
 
     return {
       message: "Cập nhật mục trong giỏ hàng thành công",
@@ -536,15 +536,6 @@ const removeItemFromCartService = async (cartId, itemId, userId) => {
       quantity: cartItem.quantity,
     });
 
-    // Kiểm tra mục có trong mảng cart.items
-    // if (!cart.items.some((item) => item.toString() === itemId)) {
-    //   console.log("Item not in cart.items", { itemId, cartItems: cart.items });
-    //   return {
-    //     message: "Mục không thuộc giỏ hàng này",
-    //     data: null,
-    //   };
-    // }
-
     // Lấy giá sản phẩm từ Price dựa trên sizeId
     const priceData = await Price.findOne({ sizeId: cartItem.sizeId });
     if (!priceData) {
@@ -571,8 +562,6 @@ const removeItemFromCartService = async (cartId, itemId, userId) => {
     await CartItem.findByIdAndDelete(itemId);
     console.log("CartItem deleted", { itemId });
 
-    // Xóa mục khỏi mảng items
-    //cart.items = cart.items.filter((item) => item.toString() !== itemId);
     // Cập nhật amount của giỏ hàng
     cart.amount = Math.max(0, cart.amount - amountToSubtract);
     await cart.save();
@@ -585,10 +574,6 @@ const removeItemFromCartService = async (cartId, itemId, userId) => {
     return {
       message: "Xóa mục khỏi giỏ hàng thành công",
       data: await Cart.findById(cartId).populate("userId", "fullName"),
-      // .populate({
-      //   path: "items",
-      //   populate: { path: "productId", select: "name" },
-      // }),
     };
   } catch (error) {
     console.error("Error in removeItemFromCartService:", {

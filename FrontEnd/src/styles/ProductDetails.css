@@ -12,23 +12,21 @@
   color: rgba(24, 96, 143, 0.9) !important;
 }
 .img {
-  transition: transform 2s ease;
-  border-radius: "12px";
-  display: "block";
+  transition: transform 0.3s ease;
+
+  object-fit: fill;
 }
 .img:hover {
   cursor: pointer;
-  transform: scale(1.5);
-  border-radius: "12px";
 }
 .imgSmall {
   transition: transform 0.3s ease;
-  border-radius: "12px";
-  display: "block";
+  border-radius: 12px;
+  display: block;
 }
 .imgSmall:hover {
   transform: scale(1.5);
-  border-radius: "12px";
+  border-radius: 12px;
 }
 .btn {
   border-color: white;
@@ -37,37 +35,51 @@
   border-color: rgba(24, 96, 143, 0.9);
 }
 .btn-size {
-  /* Hình dạng tròn */
   border-radius: 50%;
-  width: 50px; /* Kích thước nút */
+  width: 50px;
   height: 50px;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* Màu sắc và viền */
-  background-color: rgba(24, 96, 143, 0.9); /* Màu nền xanh dương */
-  color: #ffffff; /* Màu chữ trắng */
+  background-color: rgba(24, 96, 143, 0.9);
+  color: #ffffff;
   border: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ */
-  /* Font chữ và văn bản */
-  font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif; /* Font hỗ trợ tiếng Việt */
-  font-size: 16px; /* Kích thước chữ */
-  font-weight: 500; /* Độ đậm chữ */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
   text-align: center;
-  line-height: 1; /* Đảm bảo chữ căn giữa */
-  /* Hiệu ứng khi hover */
+  line-height: 1;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 .btn-size:hover {
-  background-color: rgba(24, 96, 143, 2); /* Màu nền khi hover */
-  transform: scale(1.05); /* Phóng to nhẹ khi hover */
+  background-color: rgba(24, 96, 143, 1);
+  transform: scale(1.05);
 }
 .btn-size:active {
-  transform: scale(0.95); /* Thu nhỏ nhẹ khi nhấn */
+  transform: scale(0.95);
+}
+.btn-size.active {
+  background-color: rgba(24, 96, 143, 1);
+  border: 2px solid #fff;
 }
 .price {
   color: red;
   font-size: 32px;
   padding: 24px 0;
+}
+.magnifier {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  background-size: 1200px 1800px;
+  background-repeat: no-repeat;
+  z-index: 10;
+  pointer-events: none;
+  transform-origin: center center;
 }

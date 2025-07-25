@@ -19,7 +19,6 @@ const useProduct = () => {
   const [sizes, setSizes] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Lấy danh sách sản phẩm
   const fetchProducts = useCallback(async () => {
     console.log("fetchProducts called");
     setLoading(true);
@@ -38,7 +37,24 @@ const useProduct = () => {
     }
   }, []);
 
-  // Lấy thông tin sản phẩm theo ID
+  const fetchProductsWithFilter = useCallback(async (sortBy, order) => {
+    console.log("fetchProductsWithFilter called with:", { sortBy, order });
+    setLoading(true);
+    try {
+      const response = await getAllProductApi({ sortBy, order });
+      console.log("Fetch products with filter response:", response);
+      setProducts(Array.isArray(response) ? response : []);
+      return response;
+    } catch (error) {
+      console.error("Error fetching products with filter:", error);
+      message.error(error.message || "Lỗi khi lấy danh sách sản phẩm");
+      setProducts([]);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const fetchProductById = useCallback(async (productId) => {
     console.log("fetchProductById called with:", productId);
     setLoading(true);
@@ -57,7 +73,6 @@ const useProduct = () => {
     }
   }, []);
 
-  // Lấy danh sách kích thước của sản phẩm
   const fetchProductSizes = useCallback(async (productId) => {
     console.log("fetchProductSizes called with:", productId);
     setLoading(true);
@@ -76,7 +91,6 @@ const useProduct = () => {
     }
   }, []);
 
-  // Tạo sản phẩm mới
   const handleCreateProduct = useCallback(
     async (productData) => {
       console.log("handleCreateProduct called with:", productData);
@@ -86,7 +100,7 @@ const useProduct = () => {
         console.log("Create product response:", response);
         message.success(response.message || "Tạo sản phẩm thành công");
         await fetchProducts();
-        return response.data; // Trả về dữ liệu sản phẩm để lấy _id
+        return response.data;
       } catch (error) {
         console.error("Error creating product:", error);
         message.error(error.message || "Lỗi khi tạo sản phẩm");
@@ -98,7 +112,6 @@ const useProduct = () => {
     [fetchProducts]
   );
 
-  // Cập nhật sản phẩm
   const handleUpdateProduct = useCallback(
     async (id, productData) => {
       console.log("handleUpdateProduct called with:", id, productData);
@@ -120,7 +133,6 @@ const useProduct = () => {
     [fetchProducts]
   );
 
-  // Xóa sản phẩm
   const handleDeleteProduct = useCallback(
     async (id) => {
       console.log("handleDeleteProduct called with:", id);
@@ -142,7 +154,6 @@ const useProduct = () => {
     [fetchProducts]
   );
 
-  // Tạo kích thước mới
   const handleCreateSize = useCallback(
     async (productId, sizeData) => {
       console.log("handleCreateSize called with:", productId, sizeData);
@@ -164,7 +175,6 @@ const useProduct = () => {
     [fetchProductSizes]
   );
 
-  // Xóa kích thước
   const handleDeleteSize = useCallback(
     async (productId, sizeId) => {
       console.log("handleDeleteSize called with:", productId, sizeId);
@@ -186,7 +196,6 @@ const useProduct = () => {
     [fetchProductSizes]
   );
 
-  // Thiết lập giá cho sản phẩm theo size
   const handleSetProductPrice = useCallback(
     async (productId, priceData) => {
       console.log("handleSetProductPrice called with:", productId, priceData);
@@ -211,7 +220,6 @@ const useProduct = () => {
     [fetchProducts, fetchProductSizes]
   );
 
-  // Xóa giá
   const handleDeletePrice = useCallback(
     async (productId, sizeId) => {
       console.log("handleDeletePrice called with:", productId, sizeId);
@@ -246,6 +254,7 @@ const useProduct = () => {
     setSizes,
     loading,
     fetchProducts,
+    fetchProductsWithFilter,
     fetchProductById,
     fetchProductSizes,
     handleCreateProduct,
